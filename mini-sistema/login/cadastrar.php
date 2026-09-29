@@ -2,7 +2,7 @@
 
 <?php require_once 'verifica.php'?>
 
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -21,13 +21,13 @@
             <input type="submit" value="Cadastrar">
         </form>
         <?php 
-        if($_SERVER['REQUEST_METHOD']=="POST"){
-            cadastrar_usuario($conexao, $_POST['email'], $_POST['senha']);
-        }else {
-            echo "usuario e senha invalidos";
-        }
+        // if($_SERVER['REQUEST_METHOD']=="POST"){
+        //     cadastrar_usuario($conexao, $_POST['email'], $_POST['senha']);
+        // }else {
+        //     echo "usuario e senha invalidos";
+        // }
         ?>
     </main>
     <?php  include '../include/footer.php'?>
 </body>
-</html>
+</html> -->

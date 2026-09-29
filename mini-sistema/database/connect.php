@@ -2,9 +2,9 @@
 //arquivo para ser chamado sempre que precisar conectar ao banco de dados, por exemplos quando formos fazer um CRUD pelo php 
 
 $host = "192.168.10.26";
-$dbname = "escola";
-$user = "escola";
-$pass = "escola";
+$dbname = "salao";
+$user = "salao";
+$pass = "salao";
 
 // qwe@qwe senha: 123
 
