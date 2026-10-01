@@ -2,8 +2,6 @@
 require_once  __DIR__ . '/../include/functions.php';
 require_once __DIR__ . '/../login/verifica.php';
 require_once __DIR__ . '/../database/connect.php';
-
-
 ?>
 <!-- erros:
 
@@ -15,64 +13,26 @@ ta sendo criado uma pasta .json
 -->
 <?php
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-$arquivoJson = __DIR__ . '/cortes.json';
 
 
-// LER OS CORTES
-function ler()
-{
-    global $arquivoJson;
-
-    if (!file_exists($arquivoJson)) {
-        return [];
-    }
-
-    $conteudo = file_get_contents($arquivoJson);
-
-    if ($conteudo == '') {
-        return [];
-    }
-
-    $dados = json_decode($conteudo, true);
-
-    if (!is_array($dados)) {
-        return [];
-    }
-
-    return $dados;
-}
+$erro = "";
 
 
-// SALVAR OS CORTES
-function salvar($cortes)
-{
-    global $arquivoJson;
+// ======================================================
+// CADASTRAR / ATUALIZAR
+// ======================================================
 
-    file_put_contents(
-        $arquivoJson,
-        json_encode($cortes, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
-    );
-}
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
+    $acao = $_POST["acao"] ?? "";
 
-$erro = '';
-
-
-// RECEBER FORMULÁRIO
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-    $acao = $_POST['acao'] ?? '';
-
-    $id = $_POST['id'] ?? '';
-    $nome = trim($_POST['nome'] ?? '');
-    $descricao = trim($_POST['descricao'] ?? '');
-    $preco = $_POST['preco'] ?? '';
+    $id = $_POST["id"] ?? "";
+    $nome = trim($_POST["nome"] ?? "");
+    $descricao = trim($_POST["descricao"] ?? "");
+    $preco = $_POST["preco"] ?? "";
 
 
-    // VERIFICAR SE O PREÇO POSSUI APENAS NÚMEROS
+    // Verifica o preço
     if (!is_numeric($preco)) {
 
         $erro = "O preço deve conter apenas números.";
@@ -81,105 +41,115 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         $erro = "O preço não pode ser negativo.";
 
+    } elseif ($nome == "" || $descricao == "") {
+
+        $erro = "Preencha todos os campos.";
+
     } else {
 
-        $preco = (float)$preco;
 
-        $cortes = ler();
+        // ==================================================
+        // CADASTRAR
+        // ==================================================
 
+        if ($acao == "adicionar") {
 
-        // ADICIONAR
-        if ($acao == 'adicionar') {
+            $sql = "INSERT INTO cortes
+                    (nome, descricao, preco)
+                    VALUES (?, ?, ?)";
 
-            if ($nome == '' || $descricao == '') {
+            $comando = $conexao->prepare($sql);
 
-                $erro = "Preencha todos os campos.";
+            $comando->execute([
+                $nome,
+                $descricao,
+                $preco
+            ]);
 
-            } else {
-
-                $novoCorte = [
-                    'id' => uniqid(),
-                    'nome' => $nome,
-                    'descricao' => $descricao,
-                    'preco' => $preco
-                ];
-
-                $cortes[] = $novoCorte;
-
-                salvar($cortes);
-
-                header("Location: " . basename($_SERVER['PHP_SELF']));
-                exit;
-            }
-        }
-
-
-        // ATUALIZAR
-        elseif ($acao == 'atualizar') {
-
-            foreach ($cortes as &$corte) {
-
-                if ($corte['id'] == $id) {
-
-                    $corte['nome'] = $nome;
-                    $corte['descricao'] = $descricao;
-                    $corte['preco'] = $preco;
-
-                    break;
-                }
-            }
-
-            unset($corte);
-
-            salvar($cortes);
-
-            header("Location: " . basename($_SERVER['PHP_SELF']));
+            header("Location: create.php");
             exit;
         }
 
 
-        // EXCLUIR
-        elseif ($acao == 'excluir') {
+        // ==================================================
+        // ATUALIZAR
+        // ==================================================
 
-            $novoArray = [];
+        if ($acao == "atualizar") {
 
-            foreach ($cortes as $corte) {
+            $sql = "UPDATE cortes
+                    SET nome = ?,
+                        descricao = ?,
+                        preco = ?
+                    WHERE id = ?";
 
-                if ($corte['id'] != $id) {
+            $comando = $conexao->prepare($sql);
 
-                    $novoArray[] = $corte;
-                }
-            }
+            $comando->execute([
+                $nome,
+                $descricao,
+                $preco,
+                $id
+            ]);
 
-            salvar($novoArray);
-
-            header("Location: " . basename($_SERVER['PHP_SELF']));
+            header("Location: create.php");
             exit;
         }
     }
 }
 
 
-// PEGAR OS CORTES
-$cortes = ler();
+// ======================================================
+// EXCLUIR
+// ======================================================
+
+if (isset($_GET["excluir"])) {
+
+    $id = $_GET["excluir"];
+
+    $sql = "DELETE FROM cortes WHERE id = ?";
+
+    $comando = $conexao->prepare($sql);
+
+    $comando->execute([$id]);
+
+    header("Location: create.php");
+    exit;
+}
 
 
-// VERIFICAR SE ESTÁ EDITANDO
-$editarId = $_GET['editar'] ?? '';
+// ======================================================
+// BUSCAR CORTES DO BANCO
+// ======================================================
+
+$sql = "SELECT * FROM cortes ORDER BY nome";
+
+$comando = $conexao->query($sql);
+
+$cortes = $comando->fetchAll(PDO::FETCH_ASSOC);
+
+
+// ======================================================
+// VERIFICAR EDIÇÃO
+// ======================================================
 
 $corteEdicao = null;
 
-foreach ($cortes as $corte) {
+if (isset($_GET["editar"])) {
 
-    if ($corte['id'] == $editarId) {
+    $id = $_GET["editar"];
 
-        $corteEdicao = $corte;
+    $sql = "SELECT * FROM cortes WHERE id = ?";
 
-        break;
-    }
+    $comando = $conexao->prepare($sql);
+
+    $comando->execute([$id]);
+
+    $corteEdicao = $comando->fetch(PDO::FETCH_ASSOC);
 }
 
 ?>
+
 
 <!DOCTYPE html>
 
@@ -201,7 +171,7 @@ foreach ($cortes as $corte) {
 <h1>Cadastro de Cortes</h1>
 
 
-<?php if ($erro != ''): ?>
+<?php if ($erro != ""): ?>
 
     <p style="color: red;">
         <?= htmlspecialchars($erro) ?>
@@ -210,107 +180,103 @@ foreach ($cortes as $corte) {
 <?php endif; ?>
 
 
-<h2>
+<?php if ($corteEdicao != null): ?>
 
-<?php
+    <h2>Editar corte</h2>
 
-if ($corteEdicao != null) {
-    echo "Editar corte";
-} else {
-    echo "Cadastrar corte";
-}
+<?php else: ?>
 
-?>
+    <h2>Cadastrar corte</h2>
 
-</h2>
+<?php endif; ?>
 
 
 <form method="POST">
 
 
-<?php if ($corteEdicao != null): ?>
+    <?php if ($corteEdicao != null): ?>
 
-    <input type="hidden" name="acao" value="atualizar">
+        <input type="hidden" name="acao" value="atualizar">
 
-    <input
-        type="hidden"
-        name="id"
-        value="<?= htmlspecialchars($corteEdicao['id']) ?>"
-    >
+        <input
+            type="hidden"
+            name="id"
+            value="<?= $corteEdicao["id"] ?>"
+        >
 
-<?php else: ?>
+    <?php else: ?>
 
-    <input type="hidden" name="acao" value="adicionar">
+        <input type="hidden" name="acao" value="adicionar">
 
-<?php endif; ?>
-
-
-<p>
-
-    <label>Nome:</label>
-
-    <input
-        type="text"
-        name="nome"
-        required
-        value="<?= htmlspecialchars($corteEdicao['nome'] ?? '') ?>"
-    >
-
-</p>
+    <?php endif; ?>
 
 
-<p>
+    <p>
 
-    <label>Descrição:</label>
+        <label>Nome:</label>
 
-    <input
-        type="text"
-        name="descricao"
-        required
-        value="<?= htmlspecialchars($corteEdicao['descricao'] ?? '') ?>"
-    >
+        <input
+            type="text"
+            name="nome"
+            required
+            value="<?= htmlspecialchars($corteEdicao["nome"] ?? "") ?>"
+        >
 
-</p>
-
-
-<p>
-
-    <label>Preço:</label>
-
-    <input
-        type="number"
-        name="preco"
-        min="0"
-        step="0.01"
-        required
-        value="<?= htmlspecialchars($corteEdicao['preco'] ?? '') ?>"
-    >
-
-</p>
+    </p>
 
 
-<button type="submit">
+    <p>
 
-<?php
+        <label>Descrição:</label>
 
-if ($corteEdicao != null) {
-    echo "Atualizar";
-} else {
-    echo "Cadastrar";
-}
+        <input
+            type="text"
+            name="descricao"
+            required
+            value="<?= htmlspecialchars($corteEdicao["descricao"] ?? "") ?>"
+        >
 
-?>
-
-</button>
+    </p>
 
 
-<?php if ($corteEdicao != null): ?>
+    <p>
 
-    <a href="create.php">
-        Cancelar
-    </a>
+        <label>Preço:</label>
 
-<?php endif; ?>
+        <input
+            type="number"
+            name="preco"
+            min="0"
+            step="0.01"
+            required
+            value="<?= htmlspecialchars($corteEdicao["preco"] ?? "") ?>"
+        >
+
+    </p>
+
+
+    <button type="submit">
+
+        <?php if ($corteEdicao != null): ?>
+
+            Atualizar
+
+        <?php else: ?>
+
+            Cadastrar
+
+        <?php endif; ?>
+
+    </button>
+
+
+    <?php if ($corteEdicao != null): ?>
+
+        <a href="create.php">
+            Cancelar
+        </a>
+
+    <?php endif; ?>
 
 
 </form>
@@ -344,54 +310,51 @@ if ($corteEdicao != null) {
     </tr>
 
 
-<?php foreach ($cortes as $corte): ?>
+    <?php foreach ($cortes as $corte): ?>
 
-    <tr>
+        <tr>
 
-        <td>
-            <?= htmlspecialchars($corte['nome']) ?>
-        </td>
+            <td>
+                <?= htmlspecialchars($corte["nome"]) ?>
+            </td>
 
-        <td>
-            <?= htmlspecialchars($corte['descricao']) ?>
-        </td>
+            <td>
+                <?= htmlspecialchars($corte["descricao"]) ?>
+            </td>
 
-        <td>
-            R$ <?= number_format($corte['preco'], 2, ',', '.') ?>
-        </td>
+            <td>
 
-        <td>
+                R$
 
-            <a href="?editar=<?= urlencode($corte['id']) ?>">
-                Editar
-            </a>
+                <?= number_format(
+                    $corte["preco"],
+                    2,
+                    ",",
+                    "."
+                ) ?>
 
+            </td>
 
-            <form method="POST" style="display:inline;">
+            <td>
 
-                <input
-                    type="hidden"
-                    name="acao"
-                    value="excluir"
+                <a href="?editar=<?= $corte["id"] ?>">
+                    Editar
+                </a>
+
+                |
+
+                <a
+                    href="?excluir=<?= $corte["id"] ?>"
+                    onclick="return confirm('Deseja excluir este corte?')"
                 >
-
-                <input
-                    type="hidden"
-                    name="id"
-                    value="<?= htmlspecialchars($corte['id']) ?>"
-                >
-
-                <button type="submit">
                     Excluir
-                </button>
+                </a>
 
-            </form>
+            </td>
 
-        </td>
+        </tr>
 
-    </tr>
-
-<?php endforeach; ?>
+    <?php endforeach; ?>
 
 
 </table>
