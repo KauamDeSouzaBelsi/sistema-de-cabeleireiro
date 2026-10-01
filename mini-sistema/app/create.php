@@ -163,11 +163,12 @@ if (isset($_GET["editar"])) {
 
     <title>Cortes</title>
 
+    
 </head>
 
 <body>
 
-
+<?php include __DIR__ . '/./include/header.php'; ?>
 <h1>Cadastro de Cortes</h1>
 
 
