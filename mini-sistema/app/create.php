@@ -2,6 +2,7 @@
 require_once  __DIR__ . '/../include/functions.php';
 require_once __DIR__ . '/../login/verifica.php';
 require_once __DIR__ . '/../database/connect.php';
+
 ?>
 <!-- erros:
 
