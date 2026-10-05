@@ -1,18 +1,16 @@
-<?php 
-require_once  __DIR__ . '/../include/functions.php';
-require_once __DIR__ . '/../login/verifica.php';
+<?php
+
+session_start();
+
+require_once __DIR__ . '/../include/functions.php';
 require_once __DIR__ . '/../database/connect.php';
+
+if (!isset($_SESSION["id"])) {
+    header("Location: ../login/login.php");
+    exit;
+}
 ?>
 
-
-<!-- erros:
-
-da pra adicionar um corte sem precisar colocar o preço
-
-
-
-
--->
 <?php
 
 
@@ -170,18 +168,7 @@ if (isset($_GET["editar"])) {
 
 <body>
 
-<?php include __DIR__ . '/./include/header.php'; ?>
-
-<?php
-
-session_start();
-
-if (!isset($_SESSION["id"])) {
-
-    header("Location: ../login/login.php");
-    exit;
-}
-?>
+<?php include __DIR__ . '/../include/header.php'; ?>
 
 <h1>Cadastro de Cortes</h1>
 

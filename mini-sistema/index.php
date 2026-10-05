@@ -1,23 +1,148 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tela de inicio</title>
-</head>
-<body>
-    <?php include __DIR__ . '/./include/header.php'; ?>
+<?php
 
-    
-    
-    <?php
+session_start();
+
+require_once __DIR__ . "/database/connect.php";
+
+
+// Verificar se o usuário está logado
+
+if (!isset($_SESSION["id"])) {
+
     header("Location: login/login.php");
     exit;
-    ?>
+}
 
-    <h1>Seja Bem Vindo</h1>
 
-    <img src="imagens/salao.jpg" alt="fundo de um salão" width="200" height="100" >
-    <?php include __DIR__ . '/./include/footer.php'; ?>
+// Buscar os cortes cadastrados no banco
+
+$sql = "SELECT id, nome, preco FROM cortes ORDER BY nome";
+
+$comando = $conexao->query($sql);
+
+$cortes = $comando->fetchAll(PDO::FETCH_ASSOC);
+
+?>
+
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Cortes de cabelo</title>
+
+</head>
+
+<body>
+
+<h1>Bem-vindo ao salão!</h1>
+
+
+<?php if ($_SESSION["tipo"] == "admin"): ?>
+
+    <p>
+        Você está conectado como administrador.
+    </p>
+
+    <a href="app/create.php">
+        Cadastrar novo corte
+    </a>
+
+    <br><br>
+
+    <a href="app/estoque.php">
+        Estoque
+    </a>
+
+    <br><br>
+
+    <a href="app/agenda.php">
+        Ver agenda
+    </a>
+
+<?php else: ?>
+
+    <p>
+        Escolha um corte para marcar seu horário.
+    </p>
+
+<?php endif; ?>
+
+
+<hr>
+
+
+<h2>Cortes disponíveis</h2>
+
+
+<?php if (count($cortes) == 0): ?>
+
+    <p>
+        Nenhum corte foi cadastrado ainda.
+    </p>
+
+<?php else: ?>
+
+
+    <?php foreach ($cortes as $corte): ?>
+
+        <div>
+
+            <h3>
+                <?= htmlspecialchars($corte["nome"]) ?>
+            </h3>
+
+
+            <p>
+
+                Preço:
+
+                R$
+
+                <?= number_format(
+                    $corte["preco"],
+                    2,
+                    ",",
+                    "."
+                ) ?>
+
+            </p>
+
+
+            <?php if ($_SESSION["tipo"] == "cliente"): ?>
+
+                <a href="app/agendamento.php?corte=<?= $corte["id"] ?>">
+
+                    <button type="button">
+                        Agendar este corte
+                    </button>
+
+                </a>
+
+            <?php endif; ?>
+
+
+        </div>
+
+        <hr>
+
+    <?php endforeach; ?>
+
+
+<?php endif; ?>
+
+
+<br>
+
+
+<a href="login/logout.php">
+    Sair
+</a>
+
+
 </body>
+
 </html>

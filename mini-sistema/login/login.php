@@ -24,15 +24,20 @@ session_start();
         <?php 
         if($_SERVER['REQUEST_METHOD']=="POST"){
              $usuario = consultar_user($conexao, $_POST['email']);
-             if ($_POST['email'] == $usuario['email'] && $_POST['senha'] == $usuario['senha']){
-                 $_SESSION['id'] = $usuario['id'];
+             if ($_POST['email'] == $usuario['email'] && password_verify($_POST['senha'], $usuario['senha'])) {
+
+                $_SESSION['id'] = $usuario['id'];
+                $_SESSION['tipo'] = $usuario['tipo'];
+
+                header("Location: ../index.php");
+                exit();
+            }
                  echo "login ok";
                  header("Location: ../index.php");
                  exit();
              } else {
                  echo "Usuário ou senha inválidos";
              }
-         }
         ?>
     </main>
     
