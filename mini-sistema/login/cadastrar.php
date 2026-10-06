@@ -9,18 +9,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nome = trim($_POST["nome"] ?? "");
     $email = trim($_POST["email"] ?? "");
     $senha = $_POST["senha"] ?? "";
-    $tipo = $_POST["tipo"] ?? "";
+   
 
 
     // Verificar se todos os campos foram preenchidos
 
-    if ($nome == "" || $email == "" || $senha == "" || $tipo == "") {
+    if ($nome == "" || $email == "" || $senha == "") {
 
-        $mensagem = "Preencha todos os campos.";
-
-    } elseif ($tipo != "cliente" && $tipo != "admin") {
-
-        $mensagem = "Tipo de cadastro inválido.";
+    $mensagem = "Preencha todos os campos.";
 
     } else {
 
@@ -43,9 +39,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Criptografar a senha
 
-            $senha = password_hash(
-                $senha,
-                PASSWORD_DEFAULT
+            $senha_hash = password_hash(
+            $senha,
+            PASSWORD_DEFAULT
             );
 
 
