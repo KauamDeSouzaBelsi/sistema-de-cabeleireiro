@@ -1,8 +1,9 @@
 <?php
 
 require_once "../login/verifica.php";
+require_once __DIR__ . "/../database/connect.php";
 
-session_start();
+
 
 require_once __DIR__ . "/../database/connect.php";
 

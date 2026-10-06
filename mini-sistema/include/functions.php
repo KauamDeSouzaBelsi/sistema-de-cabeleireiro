@@ -61,12 +61,14 @@ function  cadastrar_usuario($conexao, $email, $senha)
 
 function consultar_user($conexao, $email){
 
-    $sql = "SELECT id, email, senha, tipo
-        FROM usuarios
-        WHERE email = :email";
+    $sql = "SELECT id, nome, email, senha, tipo
+            FROM usuarios
+            WHERE email = :email";
 
     $stmt = $conexao->prepare($sql);
-    $stmt-> bindParam(":email", $email);
+
+    $stmt->bindParam(":email", $email);
+
     $stmt->execute();
 
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);

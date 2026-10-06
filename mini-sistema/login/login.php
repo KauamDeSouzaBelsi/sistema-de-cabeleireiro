@@ -34,20 +34,23 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
     $usuario = consultar_user($conexao, $email);
 
-    if ($usuario && password_verify($senha, $usuario['senha'])) {
+   if ($usuario && password_verify($senha, $usuario['senha'])) {
 
-        $_SESSION['id'] = $usuario['id'];
-        $_SESSION['tipo'] = $usuario['tipo'];
+    $_SESSION['id'] = $usuario['id'];
+    $_SESSION['nome'] = $usuario['nome'];
+    $_SESSION['tipo'] = $usuario['tipo'];
 
-        header("Location: ../index.php");
-        exit();
+    header("Location: ../index.php");
+    exit();
+
+}
 
     } else {
 
         echo "Usuário ou senha inválidos";
 
     }
-}
+
 
 ?>
 

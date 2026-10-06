@@ -1,8 +1,8 @@
 <?php
 
-require_once "../login/verifica.php";
 
-session_start();
+
+
 
 require_once __DIR__ . '/../include/functions.php';
 require_once __DIR__ . '/../database/connect.php';
@@ -68,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $preco
             ]);
 
-            header("Location: create.php");
+            header("Location: cortes.php");
             exit;
         }
 
@@ -94,7 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $id
             ]);
 
-            header("Location: create.php");
+            header("Location: cortes.php");
             exit;
         }
     }
@@ -115,7 +115,7 @@ if (isset($_GET["excluir"])) {
 
     $comando->execute([$id]);
 
-    header("Location: create.php");
+    header("Location: cortes.php");
     exit;
 }
 

@@ -1,42 +1,24 @@
-<?php 
-
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-require_once __DIR__ . "/../include/functions.php";
-require_once __DIR__ . '/../login/verifica.php';
-?>
-
 <?php
-// estoque.php — Estoque de produtos de cabeleireiro (PHP puro, sem extensões)
-// Os dados ficam em estoque.json, criado automaticamente na mesma pasta.
-// Coloque este arquivo na mesma pasta do index.php.
 
-const ARQUIVO = __DIR__ . '/estoque.json';
-const ESTOQUE_BAIXO = 5; // a partir dessa quantidade (ou menos) o produto fica destacado
+require_once "../login/verifica.php";
+require_once "../database/connect.php";
 
-function h($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
-
-function ler(): array {
-    if (!file_exists(ARQUIVO)) return [];
-    $dados = json_decode(file_get_contents(ARQUIVO), true);
-    return is_array($dados) ? $dados : [];
+function h($texto) {
+    return htmlspecialchars((string)$texto, ENT_QUOTES, 'UTF-8');
 }
 
-function salvar(array $produtos): void {
-    file_put_contents(
-        ARQUIVO,
-        json_encode(array_values($produtos), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
-        LOCK_EX
-    );
-}
+$sql = "SELECT * FROM estoque ORDER BY id DESC";
+
+$comando = $conexao->query($sql);
+
+$produtos = $comando->fetchAll(PDO::FETCH_ASSOC);
 
 $erro = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $acao     = $_POST['acao'] ?? '';
     $id       = (int)($_POST['id'] ?? 0);
-    $produtos = ler();
+
 
     if ($acao === 'adicionar') {
         $nome  = trim($_POST['nome'] ?? '');
@@ -48,7 +30,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $novoId = $produtos ? max(array_column($produtos, 'id')) + 1 : 1;
             $produtos[] = ['id' => $novoId, 'nome' => $nome, 'quantidade' => $qtd, 'preco' => $preco];
-            salvar($produtos);
+            $sql = "INSERT INTO estoque
+(nome, categoria, fornecedor, quantidade, preco_unitario)
+VALUES (?, ?, ?, ?, ?)";
+
+$comando = $conexao->prepare($sql);
+
+$comando->execute([
+    $nome,
+    $_POST['categoria'] ?? '',
+    $_POST['fornecedor'] ?? '',
+    $qtd,
+    $preco
+]);
         }
     } elseif ($acao === 'ajustar') {
         // tipo = entrada (soma) ou saida (subtrai, nunca abaixo de zero)
@@ -65,10 +59,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         unset($p);
-        salvar($produtos);
     } elseif ($acao === 'excluir') {
-        $produtos = array_filter($produtos, fn($p) => $p['id'] !== $id);
-        salvar($produtos);
+        $sql = "DELETE FROM estoque WHERE id = ?";
+
+        $comando = $conexao->prepare($sql);
+
+        $comando->execute([$id]);
     }
 
     if ($erro === '') {
@@ -77,7 +73,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$produtos = ler();
+$sql = "SELECT * FROM estoque ORDER BY id DESC";
+
+$comando = $conexao->query($sql);
+
+$produtos = $comando->fetchAll(PDO::FETCH_ASSOC);
 usort($produtos, fn($a, $b) => strcasecmp($a['nome'], $b['nome']));
 ?>
 <!DOCTYPE html>
@@ -128,24 +128,29 @@ usort($produtos, fn($a, $b) => strcasecmp($a['nome'], $b['nome']));
         <h2>Adicionar produto</h2>
         <?php if ($erro): ?><div class="erro"><?= h($erro) ?></div><?php endif; ?>
         <form method="post" action="">
-            <input type="hidden" name="acao" value="adicionar">
 
-            <label for="nome">Nome do produto</label>
-            <input id="nome" name="nome" required placeholder="Ex.: Shampoo 1L, Pomada modeladora...">
+    <input type="hidden" name="acao" value="adicionar">
 
-            <div class="linha">
-                <div>
-                    <label for="quantidade">Quantidade inicial</label>
-                    <input id="quantidade" name="quantidade" type="number" min="0" value="0">
-                </div>
-                <div>
-                    <label for="preco">Preço unitário (R$)</label>
-                    <input id="preco" name="preco" type="number" step="0.01" min="0" value="0">
-                </div>
-            </div>
+    <label for="nome">Nome do produto</label>
+    <input type="text" id="nome" name="nome" required
+           placeholder="Ex.: Shampoo 1L, Pomada modeladora...">
 
-            <p><button type="submit">Adicionar produto</button></p>
-        </form>
+    <label for="categoria">Categoria</label>
+    <input type="text" id="categoria" name="categoria" required
+           placeholder="Ex.: Higiene, Cosméticos">
+
+    <label for="fornecedor">Fornecedor</label>
+    <input type="text" id="fornecedor" name="fornecedor" required
+           placeholder="Ex.: Empresa X">
+
+    <label for="quantidade">Quantidade</label>
+    <input type="number" id="quantidade" name="quantidade" min="0" required>
+
+    <label for="preco">Preço</label>
+    <input type="number" id="preco" name="preco" min="0" step="0.01" required>
+
+    <button type="submit">Adicionar produto</button>
+</form>
     </div>
 
     <div class="card">
@@ -162,7 +167,7 @@ usort($produtos, fn($a, $b) => strcasecmp($a['nome'], $b['nome']));
                     <?= (int)$p['quantidade'] ?>
                     <?php if ($baixo): ?><div class="aviso"><?= $p['quantidade'] === 0 ? 'Sem estoque' : 'Estoque baixo' ?></div><?php endif; ?>
                 </td>
-                <td>R$ <?= number_format($p['preco'], 2, ',', '.') ?></td>
+                <td>R$ <?= number_format($p['preco_unitario'], 2, ',', '.') ?></td>
                 <td class="acoes">
                     <form method="post" action="">
                         <input type="hidden" name="acao" value="ajustar">
