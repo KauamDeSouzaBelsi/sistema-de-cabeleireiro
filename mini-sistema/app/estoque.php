@@ -2,6 +2,7 @@
 
 require_once "../login/verifica.php";
 require_once "../database/connect.php";
+const ESTOQUE_BAIXO = 5;
 
 function h($texto) {
     return htmlspecialchars((string)$texto, ENT_QUOTES, 'UTF-8');
