@@ -21,24 +21,37 @@ session_start();
             <input type="password" name="senha" id="senha" required>
             <input type="submit" value="Cadastrar">
         </form>
-        <?php 
-        if($_SERVER['REQUEST_METHOD']=="POST"){
-             $usuario = consultar_user($conexao, $_POST['email']);
-             if ($_POST['email'] == $usuario['email'] && password_verify($_POST['senha'], $usuario['senha'])) {
+      <?php
 
-                $_SESSION['id'] = $usuario['id'];
-                $_SESSION['tipo'] = $usuario['tipo'];
+require_once '../include/functions.php';
 
-                header("Location: ../index.php");
-                exit();
-            }
-                 echo "login ok";
-                 header("Location: ../index.php");
-                 exit();
-             } else {
-                 echo "Usuário ou senha inválidos";
-             }
-        ?>
+
+
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
+
+    $email = $_POST['email'];
+    $senha = $_POST['senha'];
+
+    $usuario = consultar_user($conexao, $email);
+
+    if ($usuario && password_verify($senha, $usuario['senha'])) {
+
+        $_SESSION['id'] = $usuario['id'];
+        $_SESSION['tipo'] = $usuario['tipo'];
+
+        header("Location: ../index.php");
+        exit();
+
+    } else {
+
+        echo "Usuário ou senha inválidos";
+
+    }
+}
+
+?>
+
+?>
     </main>
     
 </body>

@@ -15,35 +15,6 @@ function  cadastrar($conexao, $nome, $nasc, $turma, $ativo)
     echo "Aluno cadastrado com sucesso!";
 }
 
-function deletar($conexao, $id){
-    $sql = "DELETE FROM alunos WHERE id = :id";
-
-    $stmt = $conexao->prepare($sql);
-    $stmt->bindParam(":id", $id);
-    $stmt->execute();
-
-    echo "Registro deletado";
-}
-
-function listar ($conexao)
-{
-    require_once '../database/connect.php';
-
-    $sql = "SELECT * FROM alunos LIMIT 10";
-
-    $stmt = $conexao->prepare($sql);
-    $stmt->execute();
-     $alunos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-    foreach ($alunos as $aluno) {
-    echo "<hr>";
-    echo "ID: {$aluno['id']} <br>";
-    echo "Nome: {$aluno['nome']} <br>";
-    echo "Nascimento: {$aluno['nasc']} <br>";
-    echo "Turma: {$aluno['turma']} <br>";
-    echo "Ativo: {$aluno['ativo']} <br>";
-    }
-}
 
 
 function consultar($conexao, $id){
@@ -90,9 +61,9 @@ function  cadastrar_usuario($conexao, $email, $senha)
 
 function consultar_user($conexao, $email){
 
-    $sql = "SELECT id, email, senha
-            FROM usuarios
-            WHERE email = :email";
+    $sql = "SELECT id, email, senha, tipo
+        FROM usuarios
+        WHERE email = :email";
 
     $stmt = $conexao->prepare($sql);
     $stmt-> bindParam(":email", $email);
