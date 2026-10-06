@@ -2,14 +2,14 @@
 
 session_start();
 
-require_once __DIR__ . "/database/connect.php";
+include  "./database/connect.php";
 
 
 // Verificar se o usuário está logado
 
 if (!isset($_SESSION["id"])) {
 
-    header("Location: login/login.php");
+    header("Location: /login/login.php");
     exit;
 }
 
@@ -47,19 +47,19 @@ $cortes = $comando->fetchAll(PDO::FETCH_ASSOC);
         Você está conectado como administrador.
     </p>
 
-    <a href="app/create.php">
+    <a href="/app/cortes.php">
         Cadastrar novo corte
     </a>
 
     <br><br>
 
-    <a href="app/estoque.php">
+    <a href="/app/estoque.php">
         Estoque
     </a>
 
     <br><br>
 
-    <a href="app/agenda.php">
+    <a href="/app/agenda.php">
         Ver agenda
     </a>
 
@@ -114,7 +114,7 @@ $cortes = $comando->fetchAll(PDO::FETCH_ASSOC);
 
             <?php if ($_SESSION["tipo"] == "cliente"): ?>
 
-                <a href="app/agendamento.php?corte=<?= $corte["id"] ?>">
+                <a href="/app/agenda.php?corte=<?= $corte["id"] ?>">
 
                     <button type="button">
                         Agendar este corte
@@ -138,7 +138,7 @@ $cortes = $comando->fetchAll(PDO::FETCH_ASSOC);
 <br>
 
 
-<a href="login/logout.php">
+<a href="/login/logout.php">
     Sair
 </a>
 

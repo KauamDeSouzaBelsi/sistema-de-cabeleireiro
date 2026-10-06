@@ -1,10 +1,9 @@
-<?php 
- if(session_status() == PHP_SESSION_NONE){
-     session_start();
- }
- $_SESSION = array();
- session_destroy();
+<?php
 
- header("Location: ../indexphp");
- exit();
+session_start();
+$_SESSION = [];
+session_destroy();
+
+header("Location: /login/login.php");
+exit;
 ?>

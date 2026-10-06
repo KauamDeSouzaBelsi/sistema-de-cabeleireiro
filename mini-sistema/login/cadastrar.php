@@ -52,16 +52,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Cadastrar usuário
 
             $sql = "INSERT INTO usuarios
-                    (nome, email, senha, tipo)
-                    VALUES (?, ?, ?, ?)";
+                    (nome, email, senha)
+                    VALUES (?, ?, ?)";
 
             $comando = $conexao->prepare($sql);
 
             $comando->execute([
                 $nome,
                 $email,
-                $senha,
-                $tipo
+                $senha_hash
             ]);
 
 

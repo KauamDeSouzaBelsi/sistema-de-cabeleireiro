@@ -1,7 +1,7 @@
 <?php
 
-require_once "../login/verifica.php";
-require_once "../database/connect.php";
+require_once __DIR__ . "/../login/verifica.php";
+require_once __DIR__ . "/../database/connect.php";
 const ESTOQUE_BAIXO = 5;
 
 function h($texto) {
@@ -29,8 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($nome === '') {
             $erro = 'Informe o nome do produto.';
         } else {
-            $novoId = $produtos ? max(array_column($produtos, 'id')) + 1 : 1;
-            $produtos[] = ['id' => $novoId, 'nome' => $nome, 'quantidade' => $qtd, 'preco' => $preco];
             $sql = "INSERT INTO estoque
 (nome, categoria, fornecedor, quantidade, preco_unitario)
 VALUES (?, ?, ?, ?, ?)";
@@ -50,16 +48,24 @@ $comando->execute([
         $tipo = $_POST['tipo'] ?? '';
         $qtd  = max(1, (int)($_POST['qtd'] ?? 1));
 
-        foreach ($produtos as &$p) {
-            if ($p['id'] === $id) {
-                if ($tipo === 'entrada') {
-                    $p['quantidade'] += $qtd;
-                } elseif ($tipo === 'saida') {
-                    $p['quantidade'] = max(0, $p['quantidade'] - $qtd);
-                }
+        $sql = "SELECT quantidade FROM estoque WHERE id = ?";
+        $comando = $conexao->prepare($sql);
+        $comando->execute([$id]);
+        $produto = $comando->fetch(PDO::FETCH_ASSOC);
+
+        if ($produto) {
+            $novaQuantidade = (int)$produto['quantidade'];
+
+            if ($tipo === 'entrada') {
+                $novaQuantidade += $qtd;
+            } elseif ($tipo === 'saida') {
+                $novaQuantidade = max(0, $novaQuantidade - $qtd);
             }
+
+            $sql = "UPDATE estoque SET quantidade = ? WHERE id = ?";
+            $comando = $conexao->prepare($sql);
+            $comando->execute([$novaQuantidade, $id]);
         }
-        unset($p);
     } elseif ($acao === 'excluir') {
         $sql = "DELETE FROM estoque WHERE id = ?";
 
@@ -69,7 +75,7 @@ $comando->execute([
     }
 
     if ($erro === '') {
-        header('Location: ' . basename($_SERVER['PHP_SELF'])); // evita reenvio ao recarregar
+        header('Location: /app/estoque.php'); // evita reenvio ao recarregar
         exit;
     }
 }

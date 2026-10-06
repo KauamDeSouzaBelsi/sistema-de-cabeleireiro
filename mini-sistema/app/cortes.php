@@ -4,13 +4,10 @@
 
 
 
+require_once __DIR__ . '/../login/verifica.php';
 require_once __DIR__ . '/../include/functions.php';
 require_once __DIR__ . '/../database/connect.php';
 
-if (!isset($_SESSION["id"])) {
-    header("Location: ../login/login.php");
-    exit;
-}
 ?>
 
 <?php

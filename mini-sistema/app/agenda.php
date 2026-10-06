@@ -1,20 +1,7 @@
 <?php
 
-require_once "../login/verifica.php";
+require_once __DIR__ . "/../login/verifica.php";
 require_once __DIR__ . "/../database/connect.php";
-
-
-
-require_once __DIR__ . "/../database/connect.php";
-
-
-// Verificar se está logado
-
-if (!isset($_SESSION["id"])) {
-
-    header("Location: ../login/login.php");
-    exit;
-}
 
 
 // Somente cliente pode marcar
@@ -216,14 +203,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 </html>
 
-CREATE TABLE agendamentos (
-    id SERIAL PRIMARY KEY,
-    cliente_id INT NOT NULL,
-    corte_id INT NOT NULL,
-    data DATE NOT NULL,
-    horario TIME NOT NULL,
-    observacoes VARCHAR(500),
-
-    FOREIGN KEY (cliente_id) REFERENCES usuarios(id),
-    FOREIGN KEY (corte_id) REFERENCES cortes(id)
-);
