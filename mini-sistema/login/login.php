@@ -1,45 +1,49 @@
 <?php
 
+require_once "../include/functions.php";
+require_once "../database/connect.php";
+
 session_start();
-require_once __DIR__ . '/../include/functions.php';
 
 $erro = "";
 
-if ($_SERVER['REQUEST_METHOD'] === "POST") {
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $email = $_POST["email"];
     $senha = $_POST["senha"];
 
-$administrador = consultar_admin($conexao, $email);
+    // Primeiro procura o administrador
+    $administrador = consultar_admin($conexao, $email);
 
-if ($administrador && $senha == $administrador["senha"]) {
+    if ($administrador && $senha == $administrador["senha"]) {
 
-    $_SESSION["id"] = $administrador["id"];
-    $_SESSION["nome"] = $administrador["nome"];
-    $_SESSION["tipo"] = "admin";
+        $_SESSION["id"] = $administrador["id"];
+        $_SESSION["nome"] = $administrador["nome"];
+        $_SESSION["tipo"] = "admin";
 
-    header("Location: ../index.php");
-    exit();
-
-    } else {
-    echo "Usuário ou senha inválidos";
+        header("Location: ../index.php");
+        exit();
     }
+
+    // Se não for administrador, procura o cliente
+    $usuario = consultar_user($conexao, $email);
+
+    if ($usuario && $senha == $usuario["senha"]) {
+
+        $_SESSION["id"] = $usuario["id"];
+        $_SESSION["nome"] = $usuario["nome"];
+        $_SESSION["tipo"] = "cliente";
+
+        header("Location: ../index.php");
+        exit();
+    }
+
+    echo "Usuário ou senha inválidos";
 }
 
- $usuario = consultar_user($conexao, $email);
-
-if ($usuario && $senha == $usuario["senha"]) {
-
-    $_SESSION["id"] = $usuario["id"];
-    $_SESSION["nome"] = $usuario["nome"];
-    $_SESSION["tipo"] = "cliente";
-
-    header("Location: ../index.php");
-    exit();
-}
+?>
 
 
-    ?>
 
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -59,18 +63,20 @@ if ($usuario && $senha == $usuario["senha"]) {
             <p><?= htmlspecialchars($erro) ?></p>
         <?php endif; ?>
 
-        <form action="" method="post">
-            <label for="email">E-mail:</label><br>
-            <input type="email" name="email" id="email" required>
+        <form method="POST">
 
-            <br><br>
+        <label>E-mail:</label>
+        <input type="email" name="email">
 
-            <label for="senha">Senha:</label><br>
-            <input type="password" name="senha" id="senha" required>
+        <br><br>
 
-            <br><br>
+        <label>Senha:</label>
+        <input type="password" name="senha">
 
-            <input type="submit" value="Entrar">
+        <br><br>
+
+        <button type="submit">Entrar</button>
+
         </form>
 
         <br>
