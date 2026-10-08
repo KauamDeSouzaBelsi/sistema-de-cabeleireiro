@@ -141,28 +141,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <br><br>
 
 
-    <label>Tipo de cadastro:</label>
-
-    <br>
-
-    <select name="tipo" required>
-
-        <option value="">
-            Escolha uma opção
-        </option>
-
-        <option value="cliente">
-            Cliente
-        </option>
-
-        <option value="admin">
-            Administrador
-        </option>
-
-    </select>
-
-
-    <br><br>
+    
 
 
     <button type="submit">

@@ -93,44 +93,15 @@ usort($produtos, fn($a, $b) => strcasecmp($a['nome'], $b['nome']));
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Estoque</title>
-<style>
-    * { box-sizing: border-box; }
-    body { font-family: system-ui, sans-serif; background: #f4f4f6; margin: 0; padding: 24px; color: #222; }
-    .container { max-width: 900px; margin: 0 auto; }
-    h1 { margin-top: 0; }
-    nav { margin-bottom: 16px; }
-    nav a { margin-right: 14px; color: #2f6fed; text-decoration: none; font-weight: 600; }
-    .card { background: #fff; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-    label { display: block; font-size: 14px; margin: 10px 0 4px; }
-    input { width: 100%; padding: 9px; border: 1px solid #ccc; border-radius: 6px; font: inherit; }
-    button, .btn { display: inline-block; padding: 8px 14px; border: 0; border-radius: 6px; cursor: pointer;
-        font: inherit; text-decoration: none; color: #fff; background: #2f6fed; }
-    .btn-mais { background: #2e9e5b; }
-    .btn-menos { background: #f0a020; }
-    .btn-del { background: #d64545; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #eee; vertical-align: middle; }
-    td.acoes { white-space: nowrap; }
-    td.acoes form { display: inline-flex; gap: 4px; align-items: center; }
-    td.acoes input[type=number] { width: 70px; padding: 7px; }
-    .erro { color: #d64545; margin-bottom: 8px; }
-    .vazio { color: #888; text-align: center; padding: 20px; }
-    .qtd { font-weight: 700; }
-    .baixo { color: #d64545; }
-    .aviso { font-size: 12px; color: #d64545; }
-    .linha { display: flex; gap: 12px; }
-    .linha > div { flex: 1; }
-    @media (max-width: 640px) { .linha { flex-direction: column; gap: 0; } }
-</style>
+
 </head>
 <body>
 <div class="container">
-    <h1>📦 Estoque</h1>
-    <nav>
-        <a href="./">✂️ Cortes</a>
-        <a href="?">📦 Estoque</a>
-    </nav>
 
+    <?php include __DIR__ . '/../include/header.php'; ?>
+
+    <h1>Estoque</h1>
+  
     <div class="card">
         <h2>Adicionar produto</h2>
         <?php if ($erro): ?><div class="erro"><?= h($erro) ?></div><?php endif; ?>

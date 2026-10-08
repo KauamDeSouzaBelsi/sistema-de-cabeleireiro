@@ -26,17 +26,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Se não for administrador, procura o cliente
-    $usuario = consultar_user($conexao, $email);
+    // Se não for administrador, procura o cliente
+$usuario = consultar_user($conexao, $email);
 
-    if ($usuario && $senha == $usuario["senha"]) {
+if ($usuario && (
+        password_verify($senha, $usuario["senha"])
+        || $senha === $usuario["senha"]   // aceita clientes antigos, com senha em texto puro
+    )) {
 
-        $_SESSION["id"] = $usuario["id"];
-        $_SESSION["nome"] = $usuario["nome"];
-        $_SESSION["tipo"] = "cliente";
+    $_SESSION["id"] = $usuario["id"];
+    $_SESSION["nome"] = $usuario["nome"];
+    $_SESSION["tipo"] = "cliente";
 
-        header("Location: ../index.php");
-        exit();
-    }
+    header("Location: ../index.php");
+    exit();
+}
 
     echo "Usuário ou senha inválidos";
 }
