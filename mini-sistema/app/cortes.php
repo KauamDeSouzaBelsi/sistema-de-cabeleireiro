@@ -311,7 +311,7 @@ if (isset($_GET["editar"])) {
     </tr>
 
 
-    <?php foreach ($cortes as $corte): ?>
+    <?php foreach ($cortes as $corte): ?> 
 
         <tr>
 
@@ -320,7 +320,7 @@ if (isset($_GET["editar"])) {
             </td>
 
             <td>
-                <?= htmlspecialchars($corte["descricao"]) ?>
+                <?= htmlspecialchars($corte["descricao"] ?? "") ?>
             </td>
 
             <td>
