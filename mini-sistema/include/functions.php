@@ -14,14 +14,20 @@ function cadastrar_usuario($conexao, $email, $senha)
 
 function consultar_user($conexao, $email)
 {
-    $sql = "SELECT id, nome, email, senha, tipo
-            FROM usuarios
-            WHERE email = :email";
+    $sql = "SELECT id, nome, email, senha FROM usuarios WHERE email = ?";
 
-    $stmt = $conexao->prepare($sql);
-    $stmt->bindParam(":email", $email);
-    $stmt->execute();
+    $comando = $conexao->prepare($sql);
+    $comando->execute([$email]);
 
-    return $stmt->fetch(PDO::FETCH_ASSOC);
+    return $comando->fetch(PDO::FETCH_ASSOC);
+}
+
+function consultar_admin($conexao, $email)
+{
+    $sql = "SELECT id, nome, email, senha FROM administradores WHERE email = ?";
+    $comando = $conexao->prepare($sql);
+    $comando->execute([$email]);
+
+    return $comando->fetch(PDO::FETCH_ASSOC);
 }
 ?>

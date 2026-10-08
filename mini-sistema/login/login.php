@@ -7,27 +7,39 @@ $erro = "";
 
 if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
-    $email = trim($_POST['email'] ?? '');
-    $senha = $_POST['senha'];
-    $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
+    $email = $_POST["email"];
+    $senha = $_POST["senha"];
 
-    $usuario = consultar_user($conexao, $email);
+$administrador = consultar_admin($conexao, $email);
 
-    if ($usuario && password_verify($senha, $usuario['senha']))
-    {
+if ($administrador && $senha == $administrador["senha"]) {
 
-        $_SESSION['id'] = $usuario['id'];
-        $_SESSION['nome'] = $usuario['nome'];
-        $_SESSION['tipo'] = $usuario['tipo'];
+    $_SESSION["id"] = $administrador["id"];
+    $_SESSION["nome"] = $administrador["nome"];
+    $_SESSION["tipo"] = "admin";
 
-        header("Location: /index.php");
-        exit;
+    header("Location: ../index.php");
+    exit();
 
     } else {
-        $erro = "Usuário ou senha inválidos.";
+    echo "Usuário ou senha inválidos";
     }
 }
-?>
+
+ $usuario = consultar_user($conexao, $email);
+
+if ($usuario && $senha == $usuario["senha"]) {
+
+    $_SESSION["id"] = $usuario["id"];
+    $_SESSION["nome"] = $usuario["nome"];
+    $_SESSION["tipo"] = "cliente";
+
+    header("Location: ../index.php");
+    exit();
+}
+
+
+    ?>
 
 <!DOCTYPE html>
 <html lang="pt-BR">

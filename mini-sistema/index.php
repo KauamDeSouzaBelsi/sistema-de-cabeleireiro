@@ -2,6 +2,10 @@
 
 session_start();
 
+if (!isset($_SESSION["id"])) {
+    header("Location: /login/login.php");
+    exit();
+}
 include  "./database/connect.php";
 
 
@@ -41,7 +45,9 @@ $cortes = $comando->fetchAll(PDO::FETCH_ASSOC);
 <h1>Bem-vindo ao salão!</h1>
 
 
-<?php if ($_SESSION["tipo"] == "admin"): ?>
+
+
+<?php if (isset($_SESSION["tipo"]) && $_SESSION["tipo"] == "admin"): ?>
 
     <p>
         Você está conectado como administrador.
@@ -112,7 +118,7 @@ $cortes = $comando->fetchAll(PDO::FETCH_ASSOC);
             </p>
 
 
-            <?php if ($_SESSION["tipo"] == "cliente"): ?>
+            <?php if (isset($_SESSION["tipo"]) && $_SESSION["tipo"] == "cliente"): ?>
 
                 <a href="/app/agenda.php?corte=<?= $corte["id"] ?>">
 
