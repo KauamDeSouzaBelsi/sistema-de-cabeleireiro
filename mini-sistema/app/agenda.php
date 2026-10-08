@@ -6,9 +6,66 @@ require_once __DIR__ . "/../database/connect.php";
 
 // Somente cliente pode marcar
 
-if ($_SESSION["tipo"] != "cliente") {
+// Administrador vê a lista de agendamentos
 
-    echo "Somente clientes podem marcar horários.";
+if ($_SESSION["tipo"] == "admin") {
+
+    $sql = "SELECT u.email,
+                   c.nome AS corte,
+                   a.data,
+                   a.horario,
+                   a.observacoes
+            FROM agendamentos a
+            JOIN usuarios u ON u.id = a.cliente_id
+            JOIN cortes c ON c.id = a.corte_id
+            ORDER BY a.data, a.horario";
+
+    $comando = $conexao->query($sql);
+    $agendamentos = $comando->fetchAll(PDO::FETCH_ASSOC);
+
+    ?>
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <title>Agendamentos</title>
+    </head>
+    <body>
+
+    <h1>Cortes agendados</h1>
+
+    <?php if (count($agendamentos) == 0): ?>
+
+        <p>Nenhum corte agendado.</p>
+
+    <?php else: ?>
+
+        <table border="1" cellpadding="6">
+            <tr>
+                <th>E-mail do cliente</th>
+                <th>Tipo de corte</th>
+                <th>Data</th>
+                <th>Horário</th>
+                <th>Observação</th>
+            </tr>
+
+            <?php foreach ($agendamentos as $item): ?>
+                <tr>
+                    <td><?= htmlspecialchars($item["email"] ?? "") ?></td>
+                    <td><?= htmlspecialchars($item["corte"] ?? "") ?></td>
+                    <td><?= date("d/m/Y", strtotime($item["data"])) ?></td>
+                    <td><?= substr($item["horario"], 0, 5) ?></td>
+                    <td><?= htmlspecialchars($item["observacoes"] ?? "") ?></td>
+                </tr>
+            <?php endforeach; ?>
+
+        </table>
+
+    <?php endif; ?>
+
+    </body>
+    </html>
+    <?php
     exit;
 }
 
