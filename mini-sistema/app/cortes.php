@@ -106,14 +106,23 @@ if (isset($_GET["excluir"])) {
 
     $id = $_GET["excluir"];
 
-    $sql = "DELETE FROM cortes WHERE id = ?";
+    try {
 
-    $comando = $conexao->prepare($sql);
+        $sql = "DELETE FROM cortes WHERE id = ?";
+        $comando = $conexao->prepare($sql);
+        $comando->execute([$id]);
 
-    $comando->execute([$id]);
+        header("Location: cortes.php");
+        exit;
 
-    header("Location: cortes.php");
-    exit;
+    } catch (PDOException $e) {
+
+        if ($e->getCode() == "23503") {
+            $erro = "Não é possível excluir: este corte já tem agendamentos.";
+        } else {
+            throw $e;
+        }
+    }
 }
 
 
