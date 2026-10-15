@@ -34,6 +34,8 @@ $cortes = $comando->fetchAll(PDO::FETCH_ASSOC);
 
 <head>
 
+    <link rel="stylesheet" href="style/index.css">
+
     <meta charset="UTF-8">
 
     <title>Cortes de cabelo</title>

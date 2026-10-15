@@ -163,6 +163,9 @@ if (isset($_GET["editar"])) {
     <title>Cortes</title>
 
     
+<link rel="stylesheet" href="../style/cortes.css">
+
+    
 </head>
 
 <body>

@@ -1,0 +1,17 @@
+body {
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)),
+        url("../imagens/fundo.jpg");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/* Fundo branco dos cards de cortes */
+.card-corte {
+    background-color: white;
+    padding: 15px;
+    border-radius: 10px;
+}

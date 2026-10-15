@@ -10,17 +10,29 @@ require_once __DIR__ . "/../database/connect.php";
 
 if ($_SESSION["tipo"] == "admin") {
 
-    $sql = "SELECT u.email,
-                   c.nome AS corte,
-                   a.data,
-                   a.horario,
-                   a.observacoes
-            FROM agendamentos a
-            JOIN usuarios u ON u.id = a.cliente_id
-            JOIN cortes c ON c.id = a.corte_id
-            ORDER BY a.data, a.horario";
+   
+
+$sql = "SELECT
+            a.id,
+            a.status,
+            u.email,
+            c.nome AS corte,
+            a.data,
+            a.horario,
+            a.observacoes
+        FROM agendamentos a
+        LEFT JOIN usuarios u ON u.id = a.cliente_id
+        LEFT JOIN cortes c ON c.id = a.corte_id
+        ORDER BY a.data, a.horario";
+
+$comando = $conexao->query($sql);
+$agendamentos = $comando->fetchAll(PDO::FETCH_ASSOC);
+
+
 
     $comando = $conexao->query($sql);
+
+
     $agendamentos = $comando->fetchAll(PDO::FETCH_ASSOC);
 
     ?>
@@ -31,6 +43,8 @@ if ($_SESSION["tipo"] == "admin") {
         <title>Agendamentos</title>
     </head>
     <body>
+
+    <?php include __DIR__ . '/../include/header.php'; ?>
 
     <h1>Cortes agendados</h1>
 
@@ -47,19 +61,34 @@ if ($_SESSION["tipo"] == "admin") {
                 <th>Data</th>
                 <th>Horário</th>
                 <th>Observação</th>
+                <th>Status</th>
             </tr>
 
-            <?php foreach ($agendamentos as $item): ?>
-                <tr>
-                    <td><?= htmlspecialchars($item["email"] ?? "") ?></td>
-                    <td><?= htmlspecialchars($item["corte"] ?? "") ?></td>
-                    <td><?= date("d/m/Y", strtotime($item["data"])) ?></td>
-                    <td><?= substr($item["horario"], 0, 5) ?></td>
-                    <td><?= htmlspecialchars($item["observacoes"] ?? "") ?></td>
-                </tr>
-            <?php endforeach; ?>
+    <?php foreach ($agendamentos as $item): ?>
+        <tr>
+            <td><?= htmlspecialchars($item["email"] ?? "") ?></td>
+            <td><?= htmlspecialchars($item["corte"] ?? "") ?></td>
+            <td><?= htmlspecialchars($item["data"] ?? "") ?></td>
+            <td><?= htmlspecialchars($item["horario"] ?? "") ?></td>
+            <td><?= htmlspecialchars($item["observacoes"] ?? "") ?></td>
+            <td>
+                <?php if (($item["status"] ?? "Pendente") == "Pendente"): ?>
 
-        </table>
+                    <form action="marcar_feito.php" method="POST"
+      onsubmit="return confirm('O atendimento foi concluído. Deseja apagar este agendamento?');">
+
+    <input type="hidden" name="id" value="<?= $item['id'] ?>">
+
+    <button type="submit">Marcar como feito</button>
+</form>
+
+                <?php else: ?>
+                    Feito
+                <?php endif; ?>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+</table>
 
     <?php endif; ?>
 
