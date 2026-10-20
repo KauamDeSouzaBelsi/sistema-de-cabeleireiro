@@ -46,7 +46,7 @@ O sistema atende 16 requisitos funcionais, listados abaixo com a tela onde cada 
 | **RF06** | Mostrar o menu de administração (cortes, estoque e agenda) na página inicial, só para o administrador. | Admin | `index.php` |
 | **RF07** | Cadastrar um corte com nome, descrição e preço. | Admin | `app/cortes.php` |
 | **RF08** | Editar um corte; o formulário abre preenchido com os dados atuais. | Admin | `app/cortes.php?editar=ID` |
-| **RF09** | Excluir um corte, com confirmação; corte que já tem agendamento não pode ser excluído. | Admin | `app/cortes.php?excluir=ID` |
+| **RF09** | Excluir um corte, com confirmação; os agendamentos desse corte são apagados junto (chave estrangeira com ON DELETE CASCADE). | Admin | `app/cortes.php?excluir=ID` |
 | **RF10** | Marcar um horário escolhendo corte, data, horário e observações. | Cliente | `app/agenda.php` |
 | **RF11** | Recusar o agendamento quando a data e o horário já estão ocupados. | Cliente | `app/agenda.php` |
 | **RF12** | Listar todos os agendamentos por data e horário, com e-mail do cliente, corte, observação e status. | Admin | `app/agenda.php` |
@@ -68,10 +68,10 @@ As regras abaixo foram levantadas a partir do código atual; cada uma é cumprid
 | **RN03** | Sem login, qualquer página interna redireciona para a tela de login. |
 | **RN04** | O login procura primeiro entre os administradores; se não achar, procura entre os clientes. O perfil (`admin` ou `cliente`) fica na sessão. |
 | **RN05** | Só o cliente agenda. O administrador, ao abrir a agenda, vê a lista de agendamentos no lugar do formulário. |
-| **RN06** | Um horário só aceita um agendamento: a combinação de data e horário não pode repetir, qualquer que seja o corte. |
+| **RN06** | Um horário só aceita um agendamento: a combinação de data e horário não pode repetir, qualquer que seja o corte. Só o PHP garante essa regra; o banco não tem restrição UNIQUE para data e horário. |
 | **RN07** | Corte, data e horário são obrigatórios no agendamento; as observações são opcionais. |
 | **RN08** | O preço do corte é um número maior ou igual a zero; nome e descrição são obrigatórios. |
-| **RN09** | Um corte que já tem agendamento não pode ser excluído; o sistema avisa em vez de apagar. |
+| **RN09** | Excluir um corte apaga também os agendamentos dele, porque no banco a chave estrangeira de agendamentos para cortes tem ON DELETE CASCADE; o aviso de "corte com agendamentos" que existe no código nunca é disparado. |
 | **RN10** | No estoque, o nome do produto é obrigatório e a quantidade inicial não pode ser negativa. O ajuste é de pelo menos 1 unidade, e a saída nunca deixa a quantidade abaixo de zero. |
 | **RN11** | Produto com 5 unidades ou menos é marcado como "Estoque baixo"; com zero, como "Sem estoque" (constante `ESTOQUE_BAIXO`). |
 | **RN12** | Só o administrador marca um atendimento como feito, e essa ação apaga o agendamento. |
@@ -85,7 +85,7 @@ As regras abaixo foram levantadas a partir do código atual; cada uma é cumprid
 | **RNF02** | Segurança | O que o usuário digita não é executado como SQL. | Todas as consultas usam prepared statements do PDO. |
 | **RNF03** | Segurança | Textos cadastrados não rodam como código na página (XSS). | Os textos passam por `htmlspecialchars()` antes de ir para o HTML. |
 | **RNF04** | Controle de acesso | As páginas internas só abrem para quem entrou. | `login/verifica.php` confere a sessão; `app/marcar_feito.php` também confere o perfil de administrador. |
-| **RNF05** | Integridade | Dados inválidos não chegam ao banco. | Validação no servidor (preço numérico e não negativo, campos obrigatórios) e chave estrangeira entre agendamento e corte. |
+| **RNF05** | Integridade | Dados inválidos não chegam ao banco. | Validação no servidor (preço numérico e não negativo, campos obrigatórios) e restrições do banco: NOT NULL, e-mail único e chaves estrangeiras em agendamentos. |
 | **RNF06** | Usabilidade | O usuário entende o que aconteceu. | Mensagens de erro e sucesso, confirmação antes de excluir ou concluir e aviso visual de estoque baixo. |
 | **RNF07** | Robustez | Recarregar a página não repete a ação. | Cortes e estoque redirecionam depois do envio (padrão *POST → Redirect → GET*). |
 | **RNF08** | Manutenibilidade | O código é simples de alterar. | Partes repetidas ficam em `include/` (`header.php`, `functions.php`) e a conexão em `database/connect.php`. |
@@ -119,7 +119,7 @@ O administrador entra pela mesma tela de login. Na página inicial aparece o men
 
 As páginas de `app/` seguem a mesma ordem, de cima para baixo no mesmo arquivo:
 
-1. Carrega `login/verifica.php`, que inicia a sessão e manda para o login quem não entrou.
+1. Carrega `login/verifica.php`, que inicia a sessão e manda para a página inicial (que leva ao login) quem não entrou.
 2. Carrega `database/connect.php`, que abre a conexão PDO (`$conexao`).
 3. Se o pedido for um envio de formulário (`POST`), valida os campos e grava no banco; depois redireciona com `header("Location: ...")`.
 4. Busca os dados com `SELECT`.
@@ -138,10 +138,11 @@ mini-sistema/
 │   ├── marcar_feito.php   conclui (apaga) um agendamento; só admin
 │   └── select.php         lista simples de cortes, fora do menu
 ├── database/
-│   └── connect.php        conexão PDO com o PostgreSQL
+│   ├── connect.php        conexão PDO com o PostgreSQL
+│   └── salao.sql          dump do banco: tabelas, sem dados
 ├── include/
 │   ├── functions.php      consultas de usuário e administrador
-│   ├── header.php         menu: início, cortes, estoque, agenda
+│   ├── header.php         menu: Início, Cadastrar novo corte, Estoque, Ver agenda
 │   └── footer.php         rodapé (ainda não usado por nenhuma página)
 ├── login/
 │   ├── login.php          entrada de administrador e cliente
@@ -150,7 +151,8 @@ mini-sistema/
 │   └── verifica.php       barra quem não está logado
 ├── style/                 um CSS por página (agenda, cadastrar, corte, estoque, style, tela-inicio)
 └── imagens/
-    └── fundo2.avif        imagem de fundo
+    ├── fundo.jpg          fundo da página inicial e da agenda
+    └── fundo2.avif        fundo da tela de cortes
 ```
 
 Os arquivos `base.css`, `index.css` e `cortes.css`, em `style/`, não são chamados por nenhuma página hoje.
@@ -165,7 +167,7 @@ Os arquivos `base.css`, `index.css` e `cortes.css`, em `style/`, não são chama
 
 ## 5. Banco de dados
 
-O sistema usa um banco **PostgreSQL** com cinco tabelas. A estrutura abaixo foi **reconstruída a partir das consultas do código**, sem acesso ao banco; os tipos e as restrições exatas valem só depois de conferidos com o dump real, que entra na última subseção.
+O sistema usa um banco **PostgreSQL** chamado `salao`, com cinco tabelas. A descrição abaixo vem do dump `mini-sistema/database/salao.sql`, gerado pelo `pg_dump` 18.4; ele traz só a estrutura, sem nenhum dado.
 
 ### Tabelas
 
@@ -181,15 +183,15 @@ O sistema usa um banco **PostgreSQL** com cinco tabelas. A estrutura abaixo foi 
 
 | De | Para | Regra |
 | --- | --- | --- |
-| `agendamentos.cliente_id` | `usuarios.id` | Cada agendamento pertence a um cliente. |
-| `agendamentos.corte_id` | `cortes.id` | Cada agendamento é de um corte; o código trata o erro `23503` (chave estrangeira) ao excluir um corte que já tem agendamento. |
+| `agendamentos.cliente_id` | `usuarios.id` | Cada agendamento pertence a um cliente. Sem `ON DELETE`: não dá para apagar um cliente que tem agendamento. |
+| `agendamentos.corte_id` | `cortes.id` | Cada agendamento é de um corte. Com `ON DELETE CASCADE`: apagar o corte apaga os agendamentos dele. |
 
 As tabelas `administradores` e `estoque` não se ligam a nenhuma outra.
 
-### Estrutura reconstruída (PostgreSQL)
+### Estrutura do banco (salao.sql)
 
 ```sql
--- Reconstruída a partir do código. Conferir com o dump real antes de usar.
+-- Resumo do salao.sql. SERIAL = integer com sequence (id_seq) no valor padrão.
 CREATE TABLE usuarios (
     id    SERIAL PRIMARY KEY,
     nome  VARCHAR(100) NOT NULL,
@@ -207,60 +209,60 @@ CREATE TABLE administradores (
 CREATE TABLE cortes (
     id        SERIAL PRIMARY KEY,
     nome      VARCHAR(100) NOT NULL,
-    descricao TEXT,
-    preco     NUMERIC(10,2) NOT NULL CHECK (preco >= 0)
+    preco     NUMERIC(10,2) NOT NULL,
+    descricao TEXT
 );
 
 CREATE TABLE estoque (
     id             SERIAL PRIMARY KEY,
     nome           VARCHAR(100) NOT NULL,
-    categoria      VARCHAR(100),
-    fornecedor     VARCHAR(100),
-    quantidade     INTEGER NOT NULL DEFAULT 0 CHECK (quantidade >= 0),
-    preco_unitario NUMERIC(10,2) NOT NULL DEFAULT 0
+    categoria      VARCHAR(50)  NOT NULL,
+    fornecedor     VARCHAR(100) NOT NULL,
+    quantidade     INTEGER NOT NULL,
+    preco_unitario NUMERIC(10,2) NOT NULL
 );
 
 CREATE TABLE agendamentos (
     id          SERIAL PRIMARY KEY,
-    cliente_id  INTEGER REFERENCES usuarios(id),
-    corte_id    INTEGER REFERENCES cortes(id),
+    cliente_id  INTEGER NOT NULL REFERENCES usuarios(id),
+    corte_id    INTEGER NOT NULL REFERENCES cortes(id) ON DELETE CASCADE,
     data        DATE NOT NULL,
     horario     TIME NOT NULL,
-    observacoes TEXT,
+    observacoes VARCHAR(500),
     status      VARCHAR(20) NOT NULL DEFAULT 'Pendente'
 );
 ```
 
-### Dump do banco (espaço reservado)
+O banco não tem `CHECK` para preço ou quantidade negativos, nem `UNIQUE` para data e horário do agendamento; essas regras ficam só no PHP. Todas as tabelas pertencem ao usuário `salao`.
 
-Cole aqui o dump real do banco `salao`, para o servidor recriar o sistema sem depender da estrutura reconstruída acima. Para gerar o arquivo, rode no servidor onde o banco está:
+### Dump do banco e dados iniciais
+
+Como o `salao.sql` não traz dados, o sistema sobe vazio: sem cortes, produtos, clientes nem administrador (por isso o passo 4 da seção 6 é obrigatório). Para levar os dados do banco atual para o servidor, gere um arquivo só com os dados e cole o conteúdo no espaço abaixo:
 
 ```bash
-# só a estrutura (tabelas, chaves e restrições)
-pg_dump -h SEU_HOST -U SEU_USUARIO -d salao --schema-only --no-owner -f estrutura.sql
-
-# estrutura e dados (cortes, produtos e contas de teste)
-pg_dump -h SEU_HOST -U SEU_USUARIO -d salao --no-owner -f dump_completo.sql
+# só os dados (cortes, produtos, contas e agendamentos), em formato INSERT
+pg_dump -h SEU_HOST -U SEU_USUARIO -d salao --data-only --inserts --no-owner -f dados.sql
 ```
 
 ```sql
 -- ============================================================
--- COLE AQUI O DUMP DO BANCO (conteúdo de estrutura.sql ou dump_completo.sql)
+-- COLE AQUI OS DADOS DO BANCO (conteúdo de dados.sql), SE FOR LEVAR CORTES E PRODUTOS
 -- ============================================================
 ```
 
-Para restaurar o dump em outro servidor, crie o banco vazio e carregue o arquivo:
+Para restaurar em outro servidor, crie antes o usuário salao (passo 2 da seção 6), porque o dump entrega as tabelas a ele; depois crie o banco vazio e carregue a estrutura e, se houver, os dados:
 
 ```bash
-psql -U postgres -c "CREATE DATABASE salao;"
-psql -U postgres -d salao -f dump_completo.sql
+psql -U postgres -c "CREATE DATABASE salao OWNER salao;"
+psql -U salao -d salao -f mini-sistema/database/salao.sql
+psql -U salao -d salao -f dados.sql
 ```
 
 ## 6. Como rodar
 
 Para rodar o sistema, são cinco passos: baixar o projeto, criar o banco, configurar a conexão, criar o primeiro administrador e iniciar o servidor. Os comandos podem ser copiados como estão, um bloco por vez; no **Windows** use o PowerShell, no **Linux** use o terminal.
 
-Um detalhe vale para todos os passos: o menu e os redirecionamentos usam caminhos que começam na raiz do site (`/index.php`, `/app/cortes.php`, `/login/login.php`). Por isso a **pasta `mini-sistema` precisa ser a raiz do site**, e não uma subpasta dele.
+Um detalhe vale para todos os passos: o menu e os redirecionamentos têm o caminho `/sistema-de-cabeleireiro/mini-sistema/` escrito no código (`header.php`, `index.php`, `logout.php`, `verifica.php` e `estoque.php`). Por isso o projeto precisa estar numa pasta chamada exatamente **`sistema-de-cabeleireiro`** (com *ei*), na raiz do site. O repositório no GitHub se chama `sistema-de-cabeleleiro` (com *el*), então o passo 1 define o nome da pasta.
 
 ### Passo 0: conferir os programas
 
@@ -283,16 +285,18 @@ No PowerShell, troque `grep pdo_pgsql` por `Select-String pdo_pgsql`. Se o PHP n
 ### Passo 1: baixar o projeto
 
 ```bash
-git clone https://github.com/KauamDeSouzaBelsi/sistema-de-cabeleleiro.git
+git clone https://github.com/KauamDeSouzaBelsi/sistema-de-cabeleleiro.git sistema-de-cabeleireiro
 ```
 
 ```bash
-cd sistema-de-cabeleleiro
+cd sistema-de-cabeleireiro
 ```
+
+Com o Apache, rode esses dois comandos dentro da pasta pública do servidor (`C:\xampp\htdocs` no XAMPP, `/var/www/html` no Linux). Com o servidor embutido do PHP, qualquer pasta serve.
 
 ### Passo 2: criar o banco de dados
 
-O código espera um banco chamado `salao` e um usuário `salao`. Os dois primeiros comandos criam os dois (troque `sua_senha` por uma senha sua); o terceiro carrega as tabelas a partir do dump da seção 5.
+O código espera um banco chamado `salao` e um usuário `salao`. Os dois primeiros comandos criam os dois (troque `sua_senha` por uma senha sua); o terceiro, rodado dentro da pasta do projeto, cria as tabelas a partir do arquivo salao.sql (seção 5), sem nenhum dado.
 
 ```bash
 psql -U postgres -c "CREATE USER salao WITH PASSWORD 'sua_senha';"
@@ -303,7 +307,7 @@ psql -U postgres -c "CREATE DATABASE salao OWNER salao;"
 ```
 
 ```bash
-psql -U salao -d salao -f dump_completo.sql
+psql -U salao -d salao -f mini-sistema/database/salao.sql
 ```
 
 Pelo pgAdmin, sem terminal: clique com o botão direito em *Databases*, escolha *Create* e depois *Database*, e dê o nome `salao`. Em seguida abra *Query Tool* nesse banco, carregue o arquivo do dump e execute com F5.
@@ -336,15 +340,16 @@ Hoje o login compara a senha do administrador em texto puro, então o valor grav
 
 ### Passo 5: iniciar o site
 
-Na pasta `sistema-de-cabeleleiro`, rode o servidor embutido do PHP apontando para a pasta `mini-sistema`:
+Para usar o servidor embutido do PHP, rode o comando abaixo **na pasta que contém** `sistema-de-cabeleireiro` (a pasta de cima, e não dentro dela):
 
 ```bash
-php -S localhost:8000 -t mini-sistema
+cd ..
+php -S localhost:8000
 ```
 
-Abra <http://localhost:8000/login/login.php>. Deixe o terminal aberto enquanto usa o site; para parar, aperte Ctrl+C.
+Abra <http://localhost:8000/sistema-de-cabeleireiro/mini-sistema/login/login.php>. Deixe o terminal aberto enquanto usa o site; para parar, aperte Ctrl+C.
 
-Para usar o Apache (XAMPP ou servidor Linux), aponte o `DocumentRoot` do site, ou de um *virtual host*, para a pasta `mini-sistema` e reinicie o Apache.
+Com o Apache (XAMPP ou Linux), não use o comando acima: inicie o Apache e abra <http://localhost/sistema-de-cabeleireiro/mini-sistema/login/login.php>.
 
 **Deu certo se** a tela "Faça o login" abre, o administrador criado no passo 4 entra e vê o menu de administração, e uma conta criada em **Cadastrar** entra como cliente e vê o botão "Agendar este corte".
 
@@ -360,23 +365,13 @@ git pull
 | --- | --- | --- |
 | `Erro: could not find driver` | A extensão `pdo_pgsql` não está ativa. | Ative `extension=pdo_pgsql` no `php.ini` e reinicie o servidor. |
 | `Erro: SQLSTATE[08006]` ou `connection refused` | O PHP não conseguiu falar com o PostgreSQL. | Confira `$host`, `$dbname`, `$user` e `$pass` e se o PostgreSQL está ligado. |
-| `relation "cortes" does not exist` | As tabelas não foram criadas. | Refaça o passo 2 e carregue o dump. |
-| Página "não encontrada" ao abrir uma página interna sem login | `login/verifica.php` redireciona para `/mini-sistema/login/login.php`. | Entre antes por `/login/login.php`, ou corrija o caminho (ponto 4 da seção 7). |
-| Links do menu levam a páginas inexistentes | O site não está com `mini-sistema` como raiz. | Refaça o passo 5 apontando para a pasta `mini-sistema`. |
+| `relation "cortes" does not exist` | As tabelas não foram criadas. | Refaça o passo 2 e carregue o `salao.sql`. |
+| `role "salao" does not exist` ao carregar o `salao.sql` | O dump entrega as tabelas ao usuário `salao`, que ainda não existe. | Crie o usuário (primeiro comando do passo 2) e carregue o arquivo de novo. |
+| `invalid command \restrict` ao carregar o `salao.sql` | O `psql` é mais antigo que o `pg_dump` que gerou o arquivo, e não conhece essa linha. | Atualize o PostgreSQL ou apague do arquivo as linhas que começam com `\restrict` e `\unrestrict`. |
+| Página "não encontrada" ou links do menu quebrados | A pasta do projeto não se chama `sistema-de-cabeleireiro` ou não está na raiz do site. | Refaça o passo 1 com o nome exato da pasta. |
 | Página sem estilo | O navegador guardou o CSS antigo. | Aperte Ctrl+F5. |
 
-## 7. Pontos de atenção e melhorias
+### Autoria
 
-A leitura do código encontrou 9 pontos para corrigir antes de colocar o sistema em uso real; os quatro primeiros são de segurança e valem fazer primeiro.
+Projeto desenvolvido por Kauam De Souza Belsi, com 23 commits entre 29/09/2026 e 19/10/2026. Repositório: [sistema-de-cabeleleiro](https://github.com/KauamDeSouzaBelsi/sistema-de-cabeleleiro).
 
-| # | Onde | O que acontece hoje | Como corrigir |
-| --- | --- | --- | --- |
-| 1 | `login/login.php` | A senha do administrador é comparada em texto puro, e clientes antigos com senha em texto puro também entram. | Guardar o administrador com `password_hash()`, conferir só com `password_verify()` e regravar as senhas antigas como hash. |
-| 2 | `database/connect.php` | Host, usuário e senha do banco estão escritos no código e já foram para o histórico do GitHub. | Mover as credenciais para um arquivo fora do repositório (ou variáveis de ambiente), listá-lo no `.gitignore` e trocar a senha do banco. |
-| 3 | `login/verifica.php` | Só confere se há sessão, não o perfil. Um cliente logado consegue abrir `app/cortes.php` e `app/estoque.php` pela URL e alterar cortes e estoque. | Criar um `verifica_admin.php` que confira `$_SESSION["tipo"] == "admin"` e usá-lo em `cortes.php` e `estoque.php`. |
-| 4 | `login/verifica.php` | Redireciona para `/mini-sistema/login/login.php`, enquanto o resto do sistema usa `/login/login.php`. | Usar o mesmo caminho em todos os redirecionamentos. |
-| 5 | `app/cortes.php` | Excluir um corte é um link (`?excluir=ID`), que um link externo consegue disparar; os formulários não têm token contra CSRF. | Excluir por formulário `POST`, como o estoque já faz, e adicionar um token de formulário. |
-| 6 | `app/cortes.php` | O botão **Cancelar** da edição aponta para `create.php`, que não existe. | Apontar para `cortes.php`. |
-| 7 | `app/agenda.php` | A checagem de horário ocupado é um `SELECT` antes do `INSERT`, e datas passadas são aceitas. O **Marcar como feito** apaga o agendamento, então o status "Feito" nunca aparece e não há histórico. O cliente não vê nem cancela os próprios horários. | Criar `UNIQUE (data, horario)` no banco, recusar datas passadas e trocar o `DELETE` por `UPDATE ... SET status = 'Feito'`. |
-| 8 | `login/login.php`, `login/cadastrar.php` | A variável `$erro` do login nunca é preenchida (a mensagem sai por `echo` antes do HTML); não há `session_regenerate_id()` no login nem tamanho mínimo de senha no cadastro. | Preencher `$erro`, regenerar a sessão ao entrar e exigir ao menos 6 caracteres. |
-| 9 | Vários | `app/select.php` abre sem login; `include/footer.php` e três CSS não são usados; `agenda.php` e `estoque.php` repetem consultas; `cadastrar_usuario()` não é usada e não grava o nome. | Proteger ou remover `select.php` e apagar o código repetido ou sem uso. |
