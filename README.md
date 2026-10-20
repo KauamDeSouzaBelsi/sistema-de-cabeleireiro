@@ -373,5 +373,5 @@ git pull
 
 ### Autoria
 
-Projeto desenvolvido por Kauam De Souza Belsi, com 23 commits entre 29/09/2026 e 19/10/2026. Repositório: [sistema-de-cabeleleiro](https://github.com/KauamDeSouzaBelsi/sistema-de-cabeleleiro).
+Projeto desenvolvido por Kauam De Souza Belsi, com 27 commits entre 29/09/2026 e 19/10/2026. Repositório: [sistema-de-cabeleleiro](https://github.com/KauamDeSouzaBelsi/sistema-de-cabeleleiro).
 
