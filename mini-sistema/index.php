@@ -33,14 +33,14 @@ $cortes = $comando->fetchAll(PDO::FETCH_ASSOC);
 <html lang="pt-BR">
 
 <head>
-
     <link rel="stylesheet" href="style/style.css">
-
-    <link rel="stylesheet" href="style/index.css">
-
+    <link rel="stylesheet" href="style/tela-inicio.css">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Cortes de cabelo</title>
+    <title>Barbearia</title>
+
+    <link rel="stylesheet" href="style/tela-inicio.css">
 
 </head>
 
@@ -53,31 +53,17 @@ $cortes = $comando->fetchAll(PDO::FETCH_ASSOC);
 
 <?php if (isset($_SESSION["tipo"]) && $_SESSION["tipo"] == "admin"): ?>
 
-    <p>
-        Você está conectado como administrador.
-    </p>
+    <p>Você está conectado como administrador.</p>
 
-    <a href="/app/cortes.php">
-        Cadastrar novo corte
-    </a>
-
-    <br><br>
-
-    <a href="/app/estoque.php">
-        Estoque
-    </a>
-
-    <br><br>
-
-    <a href="/app/agenda.php">
-        Ver agenda
-    </a>
+    <nav class="menu-admin">
+        <a href="/app/cortes.php">Cadastrar novo corte</a>
+        <a href="/app/estoque.php">Estoque</a>
+        <a href="/app/agenda.php">Ver agenda</a>
+    </nav>
 
 <?php else: ?>
 
-    <p>
-        Escolha um corte para marcar seu horário.
-    </p>
+    <p>Escolha um corte para marcar seu horário.</p>
 
 <?php endif; ?>
 
@@ -99,7 +85,7 @@ $cortes = $comando->fetchAll(PDO::FETCH_ASSOC);
 
     <?php foreach ($cortes as $corte): ?>
 
-        <div>
+        <div class="card-corte">
 
             <h3>
                 <?= htmlspecialchars($corte["nome"]) ?>
@@ -137,7 +123,7 @@ $cortes = $comando->fetchAll(PDO::FETCH_ASSOC);
 
         </div>
 
-        <hr>
+        
 
     <?php endforeach; ?>
 
@@ -148,7 +134,7 @@ $cortes = $comando->fetchAll(PDO::FETCH_ASSOC);
 <br>
 
 
-<a href="/login/logout.php">
+<a class="link-sair" href="/login/logout.php">
     Sair
 </a>
 

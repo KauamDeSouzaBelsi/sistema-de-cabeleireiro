@@ -1,0 +1,85 @@
+
+@import url("base.css");
+
+.container {
+    max-width: 1100px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+    margin-bottom: 20px;
+    padding: 18px;
+    background-color: #f8f3ee;
+    border: 1px solid #e0d4c9;
+    border-radius: 8px;
+}
+
+.erro {
+    padding: 12px;
+    margin: 10px 0;
+    color: #8b1e1e;
+    background-color: #ffe5e5;
+    border-radius: 6px;
+}
+
+.vazio {
+    padding: 15px;
+    text-align: center;
+    color: #79513b;
+}
+
+.btn-mais {
+    background-color: #397548;
+}
+
+.btn-menos {
+    background-color: #a66b27;
+}
+
+.btn-del {
+    background-color: #a83232;
+}
+
+.qtd {
+    font-weight: bold;
+}
+
+.qtd.baixo {
+    color: #b3261e;
+}
+
+.aviso {
+    padding: 12px;
+    margin: 12px 0;
+    color: #805300;
+    background-color: #fff0c2;
+    border: 1px solid #e4c66b;
+    border-radius: 6px;
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 10px;
+        overflow-x: auto;
+    }
+}
+
+/* Links do estoque */
+a {
+    color: #79513b;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+a:visited {
+    color: #79513b;
+}
+
+a:hover {
+    color: #a77956;
+    text-decoration: underline;
+}

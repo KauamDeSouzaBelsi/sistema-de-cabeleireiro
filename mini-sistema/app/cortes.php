@@ -169,10 +169,12 @@ if (isset($_GET["editar"])) {
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <link rel="stylesheet" href="../style/corte.css">
+
     <title>Cortes</title>
 
     
-<link rel="stylesheet" href="../style/cortes.css">
+    <link rel="stylesheet" href="../style/corte.css">
 
     
 </head>

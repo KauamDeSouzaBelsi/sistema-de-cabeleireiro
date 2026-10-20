@@ -40,6 +40,9 @@ $agendamentos = $comando->fetchAll(PDO::FETCH_ASSOC);
     <html lang="pt-BR">
     <head>
         <meta charset="UTF-8">
+
+        <link rel="stylesheet" href="../style/agenda.css">
+
         <title>Agendamentos</title>
     </head>
     <body>
@@ -182,6 +185,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
 
     <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="../style/agenda.css">
 
     <title>Marcar horário</title>
 

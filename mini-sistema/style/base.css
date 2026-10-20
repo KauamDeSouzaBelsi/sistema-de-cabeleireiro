@@ -1,0 +1,18 @@
+* {
+    box-sizing: border-box;
+}
+
+button,
+input[type="submit"] {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: #79513b;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover,
+input[type="submit"]:hover {
+    background-color: #54382b;
+}

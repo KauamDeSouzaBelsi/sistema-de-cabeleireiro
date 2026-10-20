@@ -1,0 +1,172 @@
+
+@import url("base.css");
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    color: #54382b;
+
+    background-image:
+        linear-gradient(
+            rgba(245, 238, 230, 0.82),
+            rgba(245, 238, 230, 0.82)
+        ),
+        url("../imagens/fundo2.avif");
+
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+/* Menu superior */
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+nav a {
+    color: #79513b;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+nav a:hover {
+    color: #a77956;
+    text-decoration: underline;
+}
+
+/* Títulos */
+h1, h2 {
+    text-align: center;
+    color: #65452f;
+}
+
+/* Formulários */
+form {
+    max-width: 650px;
+    margin: 20px auto;
+    padding: 22px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+}
+
+form label {
+    display: block;
+    margin: 12px 0 6px;
+    font-weight: bold;
+}
+
+form input,
+form select,
+form textarea {
+    max-width: 100%;
+    padding: 10px;
+    border: 1px solid #cbb9a8;
+    border-radius: 5px;
+}
+
+form input[type="submit"],
+form button {
+    margin-top: 12px;
+    padding: 10px 16px;
+    color: white;
+    background: #79513b;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Tabela de cortes */
+table {
+    width: 100%;
+    max-width: 1000px;
+    margin: 25px auto;
+    border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+}
+
+th, td {
+    padding: 12px;
+    border: 1px solid #d8c6b6;
+    text-align: left;
+}
+
+th {
+    color: white;
+    background: #79513b;
+}
+
+tr:nth-child(even) {
+    background: #f8f0e8;
+}
+
+/* Links de editar e excluir */
+td a {
+    display: inline-block;
+    margin: 3px;
+    color: #79513b;
+    font-weight: bold;
+}
+
+td a:hover {
+    color: #a77956;
+}
+
+/* Ajuste para celulares */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+    th, td {
+        padding: 7px;
+    }
+}
+
+/* Hyperlinks com borda branca */
+a {
+    display: inline-block;
+    color: #79513b;
+    border: 1px solid white;
+    border-radius: 6px;
+    padding: 6px 10px;
+    text-decoration: none;
+}
+
+a:visited {
+    color: #79513b;
+}
+
+a:hover {
+    color: white;
+    background-color: #79513b;
+}
+/* Hyperlinks com fundo e borda brancos */
+a {
+    display: inline-block;
+    color: #79513b;
+    background-color: white;
+    border: 1px solid white;
+    border-radius: 6px;
+    padding: 6px 10px;
+    text-decoration: none;
+}
+
+a:visited {
+    color: #79513b;
+}
+
+a:hover {
+    color: white;
+    background-color: #79513b;
+}

@@ -1,0 +1,142 @@
+
+@import url("base.css");
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    padding: 25px;
+    font-family: Arial, sans-serif;
+    color: white;
+
+    background-image:
+        linear-gradient(
+            rgba(35, 20, 12, 0.55),
+            rgba(35, 20, 12, 0.55)
+        ),
+        url("../imagens/fundo.jpg");
+
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+h1 {
+    color: white;
+    text-align: center;
+    margin: 25px 0;
+}
+
+h2 {
+    color: #ffffff;
+    text-align: center;
+    margin: 30px 0 20px;
+}
+
+h3 {
+    color: #8b5e3c;
+    margin-top: 0;
+}
+
+p {
+    line-height: 1.5;
+}
+
+.card-corte {
+    display: inline-block;
+    vertical-align: top;
+    width: 260px;
+    max-width: 100%;
+    min-height: 150px;
+    margin: 12px;
+    padding: 20px;
+
+    background-color: rgba(255, 255, 255, 0.96);
+    color: #5c4033;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.card-corte h3 {
+    color: #8b5e3c;
+    font-size: 22px;
+}
+
+.card-corte p {
+    color: #6b5548;
+    font-size: 17px;
+}
+
+.card-corte button {
+    width: 100%;
+    padding: 12px;
+    color: white;
+    background-color: #79513b;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.card-corte button:hover {
+    background-color: #54382b;
+}
+
+/* Links do administrador */
+.menu-admin {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin: 25px auto;
+}
+
+.menu-admin a {
+    display: inline-block;
+    padding: 13px 22px;
+    color: white;
+    background-color: #79513b;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.menu-admin a:hover {
+    background-color: #a77956;
+}
+
+.menu-admin a:focus {
+    outline: 3px solid white;
+    outline-offset: 3px;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.6);
+    margin: 20px 0;
+}
+
+.link-sair {
+    display: inline-block;
+    margin-top: 25px;
+    color: white;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 12px;
+    }
+
+    .card-corte {
+        display: block;
+        width: auto;
+        margin: 15px 0;
+    }
+
+    .menu-admin {
+        flex-direction: column;
+    }
+
+    .menu-admin a {
+        width: 100%;
+    }
+}

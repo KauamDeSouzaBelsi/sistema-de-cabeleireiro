@@ -1,0 +1,83 @@
+
+/* Fundo da página */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #1c1714;
+    color: white;
+}
+
+/* Título */
+h1, h2 {
+    text-align: center;
+    color: white;
+}
+
+/* Formulário */
+form {
+    width: 350px;
+    max-width: calc(100% - 60px);
+    margin: 40px auto;
+    padding: 25px;
+    background-color: white;
+    border: 2px solid white;
+    border-radius: 10px;
+    color: #79513b;
+}
+
+/* Textos dos campos */
+label {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+/* Campos de cadastro */
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border: 1px solid #79513b;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+/* Quando clicar nos campos */
+input:focus {
+    outline: 2px solid #a77956;
+}
+
+/* Botão de cadastrar */
+button,
+input[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    background-color: #79513b;
+    color: white;
+    border: 1px solid white;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Efeito ao passar o mouse */
+button:hover,
+input[type="submit"]:hover {
+    background-color: #a77956;
+}
+
+/* Links */
+a {
+    color: #79513b;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
