@@ -288,155 +288,157 @@ Iniciar o servidor web ou o servidor de desenvolvimento PHP conforme o ambiente.
 
 ---
 
-## 7. Processo de geração do dump
+7. Processo de geração do dump
 
-O *dump* é uma exportação do banco de dados para um arquivo que pode ser utilizado em uma recuperação.
+O dump é uma cópia do banco de dados que pode ser utilizada para recuperar sua estrutura e seus registros.
 
-### 7.1 Verificar se o banco existe
+7.1 Verificar a versão do PostgreSQL
 
-No MobaXterm, executar:
+No terminal do MobaXterm, executar:
 
-```bash
+psql --version
+
+Registrar a versão apresentada. A versão do PostgreSQL utilizada para gerar o dump pode afetar sua restauração em servidores com versões diferentes.
+
+7.2 Verificar se o banco existe
+
+Executar:
+
 sudo -u postgres psql -l
-```
 
-**Resultado esperado:** a listagem deve apresentar o banco `salao`, caso ele exista nesse servidor.
+Resultado esperado: o banco salao aparece na listagem.
 
-### 7.2 Verificar as tabelas
-
-Executar:
-
-```bash
-sudo -u postgres psql -d salao
-```
-
-Dentro do PostgreSQL:
-
-```sql
-\dt
-```
-
-Conferir se as tabelas esperadas aparecem. Para sair:
-
-```sql
-\q
-```
-
-### 7.3 Gerar o dump
+7.3 Verificar as tabelas
 
 Executar:
 
-```bash
-sudo -u postgres pg_dump salao > /tmp/dump_salao.sql
-```
+sudo -u postgres psql -d salao -c '\dt'
 
-Esse comando exporta a estrutura e os dados acessíveis do banco `salao`, caso existam. O arquivo é gravado em `/tmp/dump_salao.sql`.
+Conferir se aparecem as tabelas esperadas: usuarios, administradores, cortes, estoque e agendamentos.
 
-### 7.4 Verificar o arquivo
+Se o comando apresentar erro, verificar se o banco existe e se o usuário possui permissão para acessá-lo.
 
-Conferir a existência e o tamanho:
+7.4 Gerar o dump
 
-```bash
+Executar:
+
+sudo -u postgres pg_dump salao -f /tmp/dump_salao.sql
+
+Esse comando exporta a estrutura e os registros existentes que podem ser acessados no banco salao, salvando o resultado em /tmp/dump_salao.sql.
+
+A conclusão do comando sem mensagens de erro é um primeiro sinal de sucesso, mas o arquivo ainda precisa ser verificado e testado.
+
+7.5 Verificar o arquivo gerado
+
+Conferir se o arquivo existe e qual é seu tamanho:
+
 ls -lh /tmp/dump_salao.sql
-```
 
-Conferir as primeiras linhas:
+Verificar se ele não está vazio:
 
-```bash
+test -s /tmp/dump_salao.sql && echo "Arquivo possui conteúdo" || echo "Arquivo ausente ou vazio"
+
+Visualizar as primeiras linhas:
+
 head -n 30 /tmp/dump_salao.sql
-```
 
-Verificar alguns comandos SQL:
+Essas verificações ajudam a identificar arquivos ausentes ou vazios. Entretanto, elas não comprovam que o backup pode ser restaurado corretamente.
 
-```bash
-grep -E 'CREATE TABLE|COPY |INSERT INTO' /tmp/dump_salao.sql
-```
+7.6 Resultado esperado
 
-A ausência de um desses comandos, isoladamente, não comprova que o dump está incorreto. O conteúdo depende das opções usadas na exportação e dos dados existentes.
+O banco salao existe e pode ser acessado.
 
-### 7.5 Resultado esperado
+As tabelas esperadas estão presentes.
 
-- O banco `salao` existe e pode ser acessado.
-- O comando de exportação termina sem erros.
-- O arquivo é criado e contém conteúdo SQL.
-- O conteúdo corresponde ao tipo de backup desejado: estrutura, dados ou ambos.
+O comando de geração do dump termina sem erros.
 
----
+O arquivo de backup existe e possui conteúdo.
 
-## 8. Processo de restauração do banco
+O arquivo está armazenado em um local adequado e protegido.
 
-O teste de restauração deve ser realizado em um banco separado, para evitar alterar o banco original.
+8. Processo de restauração do banco
 
-### 8.1 Criar o banco de teste
+A restauração deve ser testada em um banco separado, sem alterar o banco original.
 
-```bash
+8.1 Criar o banco de teste
+
+Executar:
+
 sudo -u postgres createdb salao_teste
-```
 
-Se o banco já existir, não tente criá-lo novamente. Verifique se ele pode ser reutilizado ou se deve ser recriado com autorização do responsável pelo servidor.
+Esse comando cria um banco chamado salao_teste.
 
-### 8.2 Restaurar o arquivo
+Se o banco já existir, não tente criá-lo novamente. Verifique se ele pode ser reutilizado ou recriado com autorização do responsável pelo servidor.
 
-```bash
-sudo -u postgres psql -d salao_teste -f /tmp/dump_salao.sql
-```
+8.2 Restaurar o dump
 
-O comando executa os comandos SQL contidos no arquivo no banco de teste.
+Executar:
 
-**Resultado esperado:** a restauração termina sem erros que impeçam a recuperação dos objetos e dos dados.
+sudo -u postgres psql -v ON_ERROR_STOP=1 -d salao_teste -f /tmp/dump_salao.sql
 
-### 8.3 Conferir as tabelas restauradas
+A opção ON_ERROR_STOP=1 faz com que o psql pare ao encontrar um erro SQL, facilitando a identificação de problemas na restauração.
 
-```bash
-sudo -u postgres psql -d salao_teste
-```
+Resultado esperado: o comando termina sem erros. Se ocorrer uma falha, verificar a mensagem apresentada antes de considerar a restauração concluída.
 
-Dentro do PostgreSQL:
+8.3 Verificar as tabelas restauradas
 
-```sql
-\dt
-```
+Executar:
 
-Para conferir os registros de uma tabela, por exemplo:
+sudo -u postgres psql -d salao_teste -c '\dt'
 
-```sql
-SELECT COUNT(*) FROM cortes;
-```
+Comparar a listagem com as tabelas esperadas do banco original.
 
-O resultado permite verificar quantos registros foram restaurados na tabela consultada.
+8.4 Conferir os registros
 
-Para sair:
+Para verificar a quantidade de registros da tabela cortes, executar:
 
-```sql
-\q
-```
+sudo -u postgres psql -d salao_teste -c 'SELECT COUNT(*) FROM cortes;'
 
-### 8.4 Limpeza do ambiente de teste
+Para consultar outras tabelas, substituir cortes pelo nome da tabela desejada.
 
-Após concluir e registrar os resultados, o banco `salao_teste` pode ser mantido para novas verificações ou removido, caso não seja mais necessário e exista autorização para isso.
+Se o dump foi gerado para incluir os dados, comparar as quantidades com as do banco original, considerando que os dados podem mudar entre as verificações.
 
-Não remova nem sobrescreva o banco original durante o teste.
+8.5 Cuidados após o teste
 
----
+Não sobrescrever o banco original durante o teste.
 
-## 9. Verificação após a restauração
+Não considerar a restauração bem-sucedida apenas porque as tabelas aparecem.
 
-Utilize esta lista para registrar o resultado real de cada verificação.
+Registrar eventuais erros e corrigir as incompatibilidades antes de repetir o teste.
 
-- [ ] O PostgreSQL está em execução.
-- [ ] O banco `salao` está disponível.
-- [ ] A versão do PostgreSQL foi registrada.
-- [ ] O arquivo de dump foi criado.
-- [ ] O arquivo possui conteúdo.
-- [ ] A restauração no banco `salao_teste` terminou sem erros.
-- [ ] As tabelas esperadas aparecem no banco de teste.
-- [ ] A quantidade de registros foi conferida nas tabelas relevantes.
-- [ ] A conexão PDO foi conferida no ambiente PHP.
-- [ ] A aplicação foi aberta no navegador.
-- [ ] As funcionalidades principais foram testadas.
+Manter o banco de teste enquanto ele for necessário para a validação.
 
-Uma caixa marcada só deve indicar uma etapa realmente executada e conferida.
+9. Verificação após a restauração
 
+Esta lista deve ser utilizada para registrar as verificações realizadas no servidor.
+
+9.1 Lista de verificação
+
+A versão do PostgreSQL foi registrada.
+
+O banco salao aparece na listagem.
+
+As tabelas esperadas existem no banco original.
+
+O comando de geração do dump terminou sem erros.
+
+O arquivo /tmp/dump_salao.sql existe e não está vazio.
+
+O banco de teste salao_teste foi criado ou preparado corretamente.
+
+A restauração foi executada sem erros.
+
+As tabelas esperadas aparecem no banco de teste.
+
+A quantidade de registros foi conferida nas tabelas relevantes.
+
+A conexão PHP com PostgreSQL foi testada.
+
+A aplicação foi aberta no navegador.
+
+As funcionalidades principais foram testadas.
+
+Importante: marcar uma caixa somente depois de realizar e conferir a etapa correspondente. A presença de um arquivo de dump, isoladamente, não comprova que o backup está íntegro ou que pode ser restaurado.
 ---
 
 ## 10. Testes funcionais
